@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Admin Dashboard – PRP</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script type="module" src="./firebase.js"></script>
+  <style>
+    body {
+      background-color: #f0f4f8;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    .prp-blue {
+      background-color: #005B96;
+    }
+  </style>
+</head>
+<body class="p-6">
+  <h2 class="text-3xl font-bold mb-4 text-center text-gray-800">Admin Dashboard</h2>
+  <div id="submissions" class="space-y-6 max-w-4xl mx-auto"></div>
+
+  <script type="module">
+    import { auth } from './firebase.js';
+
+    const token = localStorage.getItem('authToken');
+    const submissionsDiv = document.getElementById('submissions');
+
+    async function fetchSubmissions() {
+      const res = await fetch('http://localhost:3001/admin/pending', {
+        headers: { Authorization: 'Bearer ' + token }
+      });
+      const data = await res.json();
+
+      submissionsDiv.innerHTML = data.map(item => `
+        <div class="bg-white rounded-lg shadow p-6">
+          <h3 class="text-xl font-semibold text-gray-800">${item.title}</h3>
+          <p class="text-sm text-gray-600 mb-2"><strong>Organization:</strong> ${item.organization}</p>
+          <p class="mb-2">${item.content}</p>
+          <a href="/uploads/${item.evidence}" target="_blank" class="text-blue-600 underline mb-4 inline-block">View Evidence</a><br>
+          <div class="flex gap-4 mt-2">
+            <button onclick="handleDecision('${item._id}', 'approved')" class="bg-green-600 text-white px-4 py-1 rounded hover:bg-green-700">✅ Approve</button>
+            <button onclick="handleDecision('${item._id}', 'rejected')" class="bg-red-600 text-white px-4 py-1 rounded hover:bg-red-700">❌ Reject</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    window.handleDecision = async (id, decision) => {
+      const res = await fetch(`http://localhost:3001/admin/decision/${id}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer ' + token
+        },
+        body: JSON.stringify({ status: decision })
+      });
+      const result = await res.json();
+      alert(result.message);
+      fetchSubmissions();
+    };
+
+    fetchSubmissions();
+  </script>
+</body>
+</html>

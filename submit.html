@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Submit – PRP</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      background-color: #f0f4f8;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    .prp-blue {
+      background-color: #005B96;
+    }
+  </style>
+</head>
+<body class="flex items-center justify-center min-h-screen">
+  <div class="bg-white p-8 rounded-xl shadow-lg w-full max-w-xl">
+    <h1 class="text-2xl font-bold mb-6 text-center text-gray-800">Submit a Press Release</h1>
+    
+    <form id="submissionForm" class="space-y-4" enctype="multipart/form-data">
+      <div>
+        <label class="block text-sm font-medium text-gray-700">Title</label>
+        <input type="text" name="title" required class="w-full px-3 py-2 border border-gray-300 rounded"/>
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700">Organization</label>
+        <input type="text" name="organization" required class="w-full px-3 py-2 border border-gray-300 rounded"/>
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700">Content</label>
+        <textarea name="content" rows="4" required class="w-full px-3 py-2 border border-gray-300 rounded"></textarea>
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700">Tags (comma-separated)</label>
+        <input type="text" name="tags" class="w-full px-3 py-2 border border-gray-300 rounded"/>
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700">Region</label>
+        <input type="text" name="region" class="w-full px-3 py-2 border border-gray-300 rounded"/>
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700">Attach Evidence (PDF, Image, etc.)</label>
+        <input type="file" name="evidence" required class="block mt-1"/>
+      </div>
+
+      <button type="submit" class="w-full py-2 text-white font-semibold rounded prp-blue hover:bg-blue-800">
+        Submit
+      </button>
+    </form>
+
+    <p id="message" class="text-center text-sm mt-4 text-red-500"></p>
+  </div>
+
+  <script>
+    document.getElementById('submissionForm').addEventListener('submit', async function (e) {
+      e.preventDefault();
+      const form = e.target;
+      const formData = new FormData(form);
+      const token = localStorage.getItem('token');
+
+      if (!token) {
+        alert("You must be logged in to submit a press release.");
+        window.location.href = "login.html";
+        return;
+      }
+
+      try {
+        const res = await fetch('http://localhost:3001/submit', {
+          method: 'POST',
+          headers: { Authorization: 'Bearer ' + token },
+          body: formData
+        });
+
+        const data = await res.json();
+        document.getElementById('message').textContent = data.success
+          ? "✅ Submission successful!"
+          : "❌ Submission failed: " + JSON.stringify(data);
+        if (data.success) form.reset();
+      } catch (err) {
+        console.error(err);
+        document.getElementById('message').textContent = "❌ Error occurred. Try again.";
+      }
+    });
+  </script>
+</body>
+</html>

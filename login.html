@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Login – PR Portal</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script type="module" src="./firebase.js"></script>
+  <style>
+    body {
+      background-color: #f0f4f8;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    .prp-blue {
+      background-color: #005B96;
+    }
+  </style>
+</head>
+<body class="flex items-center justify-center h-screen">
+  <div class="bg-white shadow-xl rounded-lg p-8 w-full max-w-sm">
+    <h2 class="text-2xl font-bold text-center mb-6 text-gray-800">Login to PRP</h2>
+    <form id="login-form" class="space-y-4">
+      <div>
+        <label class="block text-sm font-medium text-gray-700">Email</label>
+        <input type="email" id="email" required class="w-full border border-gray-300 rounded px-3 py-2" />
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700">Password</label>
+        <input type="password" id="password" required class="w-full border border-gray-300 rounded px-3 py-2" />
+      </div>
+      <button type="submit" class="w-full prp-blue text-white font-semibold py-2 rounded">Login</button>
+    </form>
+    <p id="message" class="mt-4 text-center text-sm text-red-500"></p>
+  </div>
+
+  <script type="module">
+    import { auth } from './firebase.js';
+    import { signInWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
+
+    const form = document.getElementById('login-form');
+    const message = document.getElementById('message');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+
+      try {
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        const token = await userCredential.user.getIdToken();
+        localStorage.setItem('token', token);
+        message.textContent = '✅ Login successful. Redirecting...';
+        setTimeout(() => {
+          window.location.href = 'submit.html';
+        }, 1000);
+      } catch (err) {
+        console.error(err);
+        message.textContent = '❌ Login failed: ' + err.message;
+      }
+    });
+  </script>
+</body>
+</html>
