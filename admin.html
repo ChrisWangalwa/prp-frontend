@@ -27,7 +27,7 @@
     const submissionsDiv = document.getElementById('submissions');
 
     async function fetchSubmissions() {
-      const res = await fetch('http://localhost:3001/admin/pending', {
+      const res = await fetch('https://a1b2c3d4.ngrok.io/admin/pending', {
         headers: { Authorization: 'Bearer ' + token }
       });
       const data = await res.json();
