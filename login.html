@@ -1,10 +1,9 @@
-<!-- frontend/login.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Login – PR Portal</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Login – PR Portal</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script type="module" src="./firebase.js"></script>
   <style>
@@ -29,9 +28,7 @@
         <label class="block text-sm font-medium text-gray-700">Password</label>
         <input type="password" id="password" required class="w-full border border-gray-300 rounded px-3 py-2" />
       </div>
-      <button type="submit" class="w-full prp-blue text-white font-semibold py-2 rounded hover:bg-blue-700 transition">
-        Login
-      </button>
+      <button type="submit" class="w-full prp-blue text-white font-semibold py-2 rounded hover:bg-blue-700 transition">Login</button>
     </form>
     <p id="message" class="mt-4 text-center text-sm text-red-500"></p>
   </div>
@@ -50,31 +47,33 @@
 
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      const token = await userCredential.user.getIdToken(true); // Force refresh to get latest claims
+      const token = await userCredential.user.getIdToken();
 
-      const decodedToken = await fetch('https://prp-backend-cjzc.onrender.com/decode-token', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
-        }
-      }).then(res => res.json());
+      // Log token to debug
+      console.log("✅ Firebase token received:", token);
 
       localStorage.setItem('token', token);
       message.textContent = '✅ Login successful. Redirecting...';
       message.classList.remove('text-red-500');
       message.classList.add('text-green-600');
 
-      setTimeout(() => {
-        if (decodedToken.role === 'admin') {
-          window.location.href = 'admin.html';
-        } else {
-          window.location.href = 'submit.html';
-        }
-      }, 1000);
+      // Fetch user role from backend
+      const res = await fetch('https://prp-backend-cjzc.onrender.com/verify-role', {
+        method: 'GET',
+        headers: { Authorization: 'Bearer ' + token }
+      });
+
+      const data = await res.json();
+      console.log("✅ Role response:", data);
+
+      if (data.role === 'admin') {
+        window.location.href = 'admin.html';
+      } else {
+        window.location.href = 'submit.html';
+      }
     } catch (err) {
-      console.error(err);
-      message.textContent = '❌ Login failed: ' + err.message;
+      console.error("❌ Login error:", err); // 🔍 LOG the full error
+      message.textContent = '❌ Login failed. ' + (err.message || 'Check credentials or connection.');
       message.classList.remove('text-green-600');
       message.classList.add('text-red-500');
     }
