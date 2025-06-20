@@ -24,9 +24,11 @@
   </main>
 
   <script>
+    const BACKEND_URL = "https://prp-backend-cjzc.onrender.com";
+
     async function loadReleases() {
       try {
-        const res = await fetch("http://localhost:3001/submit/public");
+        const res = await fetch(`${BACKEND_URL}/submit/public`);
         const data = await res.json();
 
         const container = document.getElementById("releases");
@@ -40,7 +42,7 @@
             <h3 class="text-lg font-bold">${release.title}</h3>
             <p class="text-sm text-gray-600">${release.organization}</p>
             <p class="mt-2">${release.content}</p>
-            <a href="/uploads/${release.evidence}" target="_blank" class="text-blue-600 underline mt-2 inline-block">📎 View Evidence</a>
+            <a href="${BACKEND_URL}/uploads/${release.evidence}" target="_blank" class="text-blue-600 underline mt-2 inline-block">📎 View Evidence</a>
           </div>
         `).join('');
       } catch (err) {
